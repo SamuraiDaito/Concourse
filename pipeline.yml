@@ -1,5 +1,14 @@
-jobs:
+pipeline name: fetch-secrets-pipeline
+
+resources:
   - name: getappdata
+    type: git
+    source:
+      uri: "https://github.com/SamuraiDaito/Concourse.git"
+      branch: main
+
+jobs:
+  - name: fetch-secrets-and-run-script
     plan:
       - get: getappdata
         trigger: true
