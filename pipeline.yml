@@ -2,12 +2,12 @@ resources:
   - name: python-script-repo
     type: git
     source:
-      uri: "https://github.com/jayshah-12/task1.git"
+      uri: "https://github.com/SamuraiDaito/Concourse.git.git"
       branch: main
 jobs:
 - name: fetch-secrets
   plan:
-  - get: getappdata-repo
+  - get: getappdata
     trigger: true
   - task: fetch-secrets-task
     config:
