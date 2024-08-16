@@ -1,5 +1,3 @@
-pipeline name: fetch-secrets-pipeline
-
 resources:
   - name: getappdata
     type: git
@@ -59,17 +57,17 @@ jobs:
             args:
               - -c
               - |
-                # Update apk and check if curl and awk are available
-                apk update
-                apk add --no-cache curl awk
-
+                # Install curl
+                apk add --no-cache curl
+                
                 # Source the secrets file
                 source secrets-output/secrets.env
-
-                # Login with multipart form data
+                
+                # Perform login with multipart/form-data
                 curl -k -X POST \
                   -c cookies.txt \
                   -H 'Content-Type: multipart/form-data' \
+                  -F "username=$Email" \
+                  -F "password=$Password" \
                   "https://www.screener.in/login/" \
-                  -F "email=$Email" \
-                  -F "password=$Password"
+                  -v
