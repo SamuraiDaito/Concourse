@@ -1,33 +1,32 @@
+import os
 import requests
 from bs4 import BeautifulSoup
-import os
 
-# Fetch credentials from environment variables
+# Read environment variables
 email = os.getenv('EMAIL')
 password = os.getenv('PASSWORD')
 
-# URL for login
+if not email or not password:
+    raise ValueError("EMAIL or PASSWORD environment variables not set")
+
+# Define the URL and payload
 login_url = 'https://www.screener.in/login/'
-
-# Create a session to persist login cookies
-session = requests.Session()
-
-# Fetch the login page
-response = session.get(login_url)
-soup = BeautifulSoup(response.text, 'html.parser')
-
-# Find the form data
-# Adjust the selectors according to the actual form on the site
 payload = {
     'email': email,
     'password': password
 }
 
-# Post the login form
-response = session.post(login_url, data=payload)
+# Make the login request
+response = requests.post(login_url, data=payload)
 
 # Check if login was successful
-if 'login' in response.url:
-    print("Login failed!")
-else:
+if response.ok:
     print("Login successful!")
+else:
+    print("Login failed!")
+    print("Status Code:", response.status_code)
+    print("Response:", response.text)
+
+# Debugging: Print response content for further investigation
+soup = BeautifulSoup(response.content, 'html.parser')
+print(soup.prettify())
