@@ -48,22 +48,27 @@ if login_response.url == "https://www.screener.in/dash/":
     # Debug print to check page content
     print(page_soup.prettify()[:2000])  # Print first 2000 characters for inspection
     
-    # Find all tables on the page to inspect
-    tables = page_soup.find_all('table')
-    print(f"Found {len(tables)} tables on the page.")
-
-    # Print headers from each table for inspection
-    for idx, table in enumerate(tables):
-        headers = [header.get_text(strip=True) for header in table.find_all('th')]
-        print(f"Table {idx} Headers: {headers}")
+    # Find the "Profit & Loss" section
+    profit_loss_section = page_soup.find('h2', string="Profit & Loss")
+    
+    if profit_loss_section:
+        table = profit_loss_section.find_next('table')
         
-        # Extract table rows
-        rows = table.find_all('tr')
-        for row in rows:
-            columns = row.find_all('td')
-            column_data = [column.get_text(strip=True) for column in columns]
-            if column_data:
-                print(f"Table {idx} Row Data: {column_data}")
-
+        if table:
+            # Extract table headers
+            headers = [header.get_text(strip=True) for header in table.find_all('th')]
+            print(f"Headers: {headers}")
+            
+            # Extract table rows
+            rows = table.find_all('tr')
+            for row in rows:
+                columns = row.find_all('td')
+                column_data = [column.get_text(strip=True) for column in columns]
+                if column_data:
+                    print(column_data)
+        else:
+            print("Table not found in Profit & Loss section!")
+    else:
+        print("Profit & Loss section not found!")
 else:
     print("Login failed!")
