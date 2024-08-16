@@ -39,7 +39,7 @@ if login_response.url == "https://www.screener.in/dash/":
     print("Login successful!")
 
     # URL for Reliance company's Profit & Loss page
-    reliance_url = "https://www.screener.in/company/RELIANCE/"
+    reliance_url = "https://www.screener.in/company/RELIANCE/consolidated/"
     
     # Fetch the page content
     page_response = session.get(reliance_url)
