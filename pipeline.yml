@@ -57,15 +57,15 @@ jobs:
             args:
               - -c
               - |
-                # Install curl
-                apk add --no-cache curl
-                
+                # Install curl and awk
+                apk add --no-cache curl awk
+
                 # Source the secrets file
                 source secrets-output/secrets.env
-                
+
                 # Fetch login page to get CSRF token
-                csrf_token=$(curl -s -D - https://www.screener.in/login/ | grep -oP 'name="csrf_token" value="\K[^"]+')
-                
+                csrf_token=$(curl -s https://www.screener.in/login/ | awk -F'csrf_token' '{print $2}' | awk -F'value="' '{print $2}' | awk -F'"' '{print $1}')
+
                 # Login with CSRF token and credentials
                 curl -X POST https://www.screener.in/login/ \
                   -d "email=$Email" \
