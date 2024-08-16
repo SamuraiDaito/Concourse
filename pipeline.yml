@@ -39,6 +39,7 @@ jobs:
                 echo "Password: $Password"
 
                 # Export credentials for use in the next task
+                mkdir -p secrets-output
                 echo "EMAIL=$Email" > secrets-output/secrets.env
                 echo "PASSWORD=$Password" >> secrets-output/secrets.env
 
