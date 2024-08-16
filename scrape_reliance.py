@@ -1,69 +1,48 @@
-import os
-import requests
 import pandas as pd
 from bs4 import BeautifulSoup
+import requests
 
-# Load credentials from environment variables
-email = os.getenv("EMAIL")
-password = os.getenv("PASSWORD")
+# Function to parse the data from the table
+def parse_table(soup):
+    # Find the "Profit & Loss" section
+    profit_loss_section = soup.find('h2', string="Profit & Loss")
+    
+    if profit_loss_section:
+        table = profit_loss_section.find_next('table')
+        
+        if table:
+            # Extract table headers
+            headers = [header.get_text(strip=True) for header in table.find_all('th')]
+            
+            # Ensure headers are correctly handled
+            print(f"Headers: {headers}")
 
-# Print loaded credentials (for debugging)
-print(f"Loaded Email: {email}")
-print(f"Loaded Password: {password}")
+            # Extract table rows
+            data = []
+            rows = table.find_all('tr')
+            for row in rows:
+                columns = [col.get_text(strip=True) for col in row.find_all('td')]
+                if columns:
+                    data.append(columns)
+            
+            # Ensure data is correctly handled
+            print(f"Data: {data}")
 
-# Use requests to log in to Screener.in
-login_url = "https://www.screener.in/login/"
-session = requests.Session()
-response = session.get(login_url)
+            # Create DataFrame
+            df = pd.DataFrame(data, columns=headers)
+            return df
+        else:
+            print("Table not found in Profit & Loss section!")
+            return None
+    else:
+        print("Profit & Loss section not found!")
+        return None
+
+# Example usage
+url = "https://www.screener.in/company/RELIANCE/"
+response = requests.get(url)
 soup = BeautifulSoup(response.text, 'html.parser')
 
-# Extract CSRF token
-csrf_token = soup.find('input', {'name': 'csrfmiddlewaretoken'})
-if csrf_token:
-    csrf_token = csrf_token['value']
-else:
-    print("CSRF token not found!")
-    exit()
-
-# Prepare login data with the extracted CSRF token
-login_data = {
-    "username": email,
-    "password": password,
-    "csrfmiddlewaretoken": csrf_token
-}
-
-# Post the login data to the form
-login_response = session.post(login_url, data=login_data, headers={"Referer": login_url})
-
-# Check if login was successful
-if login_response.url == "https://www.screener.in/dash/":
-    print("Login successful!")
-
-    # URL for Reliance company's Profit & Loss page
-    reliance_url = "https://www.screener.in/company/RELIANCE/"
-    
-    # Fetch the page content
-    page_response = session.get(reliance_url)
-    page_soup = BeautifulSoup(page_response.text, 'html.parser')
-    
-    # Find the table data for Profit & Loss section
-    rows = page_soup.select_one('body main section:nth-of-type(5) div:nth-of-type(3)').find_all('tr')
-    
-    # Initialize lists to store the table data
-    headers = []
-    data = []
-
-    for i, row in enumerate(rows):
-        cols = [col.text.strip() for col in row.find_all('td')]
-        if i == 0:
-            headers = cols  # Store headers
-        else:
-            data.append(cols)  # Store data rows
-
-    # Create DataFrame from the collected data
-    df = pd.DataFrame(data, columns=headers)
-
-    # Print the DataFrame to check if data is correct
+df = parse_table(soup)
+if df is not None:
     print(df)
-else:
-    print("Login failed!")
