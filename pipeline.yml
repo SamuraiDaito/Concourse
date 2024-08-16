@@ -1,10 +1,9 @@
 resources:
-- name: getappdata-repo
-  type: git
-  source:
-    uri: https://github.com/SamuraiDaito/Concourse.git
-    branch: main
-
+  - name: python-script-repo
+    type: git
+    source:
+      uri: "https://github.com/jayshah-12/task1.git"
+      branch: main
 jobs:
 - name: fetch-secrets
   plan:
@@ -15,12 +14,33 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: alpine}
-      run:
-        path: /bin/sh
-        args:
-        - -c
-        - |
-          apk add --no-cache curl jq bash
-          chmod +x getappdata-repo/getappdata.sh
-          ./getappdata-repo/getappdata.sh
+        source: 
+          repository: vault:1.13.3
+          tag: latest
+      outputs:
+        - name: secrets-output
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                # Set Vault address and token
+                export VAULT_ADDR='http://localhost:8200'
+                export VAULT_TOKEN='root'
+               
+                # Fetch secrets from Vault
+                username=$(vault kv get -field=id secret/data/myapp)
+                password=$(vault kv get -field=password secret/data/myapp)
+ 
+                # Store secrets in a file
+                echo "export ID=$id" > secrets-output/secrets.sh
+                echo "export PASSWORD=$password" >> secrets-output/secrets.sh
+                chmod +x secrets-output/secrets.sh
+ 
+                # Debugging: List the contents of the secrets directory
+                echo "Contents of secrets-output directory:"
+                ls -l secrets-output
+ 
+                # Debugging: Print the contents of the secrets file
+                echo "Contents of secrets.sh:"
+                cat secrets-output/secrets.sh
