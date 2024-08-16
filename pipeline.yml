@@ -63,18 +63,18 @@ jobs:
                 # Source the secrets file
                 source secrets-output/secrets.env
                 
-                # Step 1: Fetch CSRF Token
-                csrf_response=$(curl -s -c cookies.txt -D - "https://www.screener.in/login/")
-                csrf_token=$(echo "$csrf_response" | grep -oP 'name="csrf_token" value="\K[^"]+')
+                # Fetch CSRF Token from the login page
+                csrf_response=$(curl -s -c cookies.txt "https://www.screener.in/login/")
+                csrf_token=$(echo "$csrf_response" | grep -oP 'name="csrfmiddlewaretoken" value="\K[^"]+')
                 
-                # Step 2: Perform login with CSRF Token
+                # Perform login with CSRF Token
                 curl -k -X POST \
                   -b cookies.txt \
                   -c cookies.txt \
-                  -H 'Content-Type: multipart/form-data' \
+                  -H 'Content-Type: multipart/form-data; boundary=------------------------GS4aQFgnbxtLpMymaLaYIJ' \
                   -H 'Referer: https://www.screener.in/login/' \
                   -F "username=$Email" \
                   -F "password=$Password" \
-                  -F "csrf_token=$csrf_token" \
+                  -F "csrfmiddlewaretoken=$csrf_token" \
                   "https://www.screener.in/login/" \
                   -v
