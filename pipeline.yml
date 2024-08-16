@@ -46,7 +46,7 @@ jobs:
                 # List content of directory
                 ls -l secrets-output
 
-                #Print content of secrets file
+                # Print content of secrets file
                 echo "Contents of file:"
                 cat secrets-output/secrets.sh
 
@@ -60,7 +60,6 @@ jobs:
               tag: 3.9
           inputs:
             - name: getappdata
-          outputs:
             - name: secrets-output
           run:
             path: sh
@@ -70,6 +69,12 @@ jobs:
                 # Install dependencies
                 pip install beautifulsoup4 requests
 
+                # Source the secrets.sh file to load environment variables
+                . secrets-output/secrets.sh
+
+                # Debugging: Print the loaded environment variables
+                echo "Loaded Email: $EMAIL"
+                echo "Loaded Password: $PASSWORD"
+
                 # Run the login script
-                export $(cat secrets-output/secrets.env)
                 python getappdata/login.py
