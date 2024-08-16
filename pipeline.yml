@@ -63,9 +63,13 @@ jobs:
                 # Source the secrets file
                 source secrets-output/secrets.env
                 
-                # Use curl to log in to Screener.in
+                # Fetch login page to get CSRF token
+                csrf_token=$(curl -s -D - https://www.screener.in/login/ | grep -oP 'name="csrf_token" value="\K[^"]+')
+                
+                # Login with CSRF token and credentials
                 curl -X POST https://www.screener.in/login/ \
                   -d "email=$Email" \
                   -d "password=$Password" \
+                  -d "csrf_token=$csrf_token" \
                   -c cookies.txt \
                   -v
