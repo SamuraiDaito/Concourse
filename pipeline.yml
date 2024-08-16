@@ -2,7 +2,7 @@ resources:
   - name: getappdata
     type: git
     source:
-      uri: "https://github.com/SamuraiDaito/Concourse.git"
+      uri: "https://github.com/SamuraEmailaito/Concourse.git"
       branch: main
 
 jobs:
@@ -29,9 +29,9 @@ jobs:
                 export VAULT_TOKEN='abcd1234'
                
                 # Fetch secrets from Vault
-                id=$(vault kv get -field=id secret/myapp)
-                password=$(vault kv get -field=password secret/myapp)
+                Email=$(vault kv get -field=Email secret/screener)
+                Password=$(vault kv get -field=Password secret/screener)
 
-                # Debugging: Print the secrets
-                echo "ID: $id"
-                echo "PASSWORD: $password"
+                # Print the secrets
+                echo "Email: $Email"
+                echo "Password: $Password"
