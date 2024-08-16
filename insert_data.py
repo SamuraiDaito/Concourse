@@ -70,7 +70,7 @@ if login_response.url == "https://www.screener.in/dash/":
             print("Data saved to profit_loss_data.csv")
 
             # Database connection details
-            DATABASE_URL = 'postgresql://concourse_user:concourse_pass@localhost:5432/concourse'
+            DATABASE_URL = 'postgresql://concourse_user:concourse_pass@192.168.3.109:5432/concourse'
             
             # Create a SQLAlchemy engine
             engine = create_engine(DATABASE_URL)
