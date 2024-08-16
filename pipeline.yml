@@ -39,8 +39,8 @@ jobs:
                 echo "Password: $Password"
 
                 # Export credentials for use in the next task
-                echo "EMAIL=$Email" > secrets-output/secrets.sh
-                echo "PASSWORD=$Password" >> secrets-output/secrets.sh
+                echo "export EMAIL=$Email" > secrets-output/secrets.sh
+                echo "export PASSWORD=$Password" >> secrets-output/secrets.sh
                 chmod +x secrets-output/secrets.sh
 
                 # List content of directory
