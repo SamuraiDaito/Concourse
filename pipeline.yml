@@ -57,20 +57,22 @@ jobs:
             args:
               - -c
               - |
-                # Install curl
-                apk add --no-cache curl
+                # Install required packages
+                apk add --no-cache curl grep
                 
                 # Source the secrets file
                 source secrets-output/secrets.env
                 
                 # Step 1: Fetch CSRF Token
-                csrf_token=$(curl -s -c cookies.txt "https://www.screener.in/login/" | grep -oP 'name="csrf_token" value="\K[^"]+')
+                csrf_response=$(curl -s -c cookies.txt -D - "https://www.screener.in/login/")
+                csrf_token=$(echo "$csrf_response" | grep -oP 'name="csrf_token" value="\K[^"]+')
                 
                 # Step 2: Perform login with CSRF Token
                 curl -k -X POST \
                   -b cookies.txt \
                   -c cookies.txt \
                   -H 'Content-Type: multipart/form-data' \
+                  -H 'Referer: https://www.screener.in/login/' \
                   -F "username=$Email" \
                   -F "password=$Password" \
                   -F "csrf_token=$csrf_token" \
