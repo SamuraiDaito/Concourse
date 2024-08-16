@@ -67,6 +67,8 @@ jobs:
           inputs:
             - name: getappdata
             - name: secrets-output
+          outputs:
+            - name: data-output
           run:
             path: sh
             args:
@@ -75,6 +77,8 @@ jobs:
                 pip install beautifulsoup4 requests pandas
                 . secrets-output/secrets.sh
                 python getappdata/scrape_reliance.py
+                # Ensure the output CSV is placed in the data-output directory
+                mv profit_loss_data.csv data-output/
 
       - task: insert-data
         config:
@@ -86,6 +90,7 @@ jobs:
               tag: 3.9
           inputs:
             - name: getappdata
+            - name: data-output
           run:
             path: sh
             args:
