@@ -76,12 +76,6 @@ jobs:
                 . secrets-output/secrets.sh
                 python getappdata/scrape_reliance.py
 
-  - name: insert-data-to-db
-    plan:
-      - get: getappdata
-        trigger: true
-        passed: [scrape-reliance-data]
-
       - task: insert-data
         config:
           platform: linux
