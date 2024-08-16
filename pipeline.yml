@@ -63,6 +63,6 @@ jobs:
               - -c
               - |
                 # Make sure the script is executable
-                chmod +x getappdata/login.sh
+                chmod +x C:\Users\ManaliBhave\Documents\Concourse\getappdata\login.sh
                 # Run the login script
                 ./getappdata/login.sh
