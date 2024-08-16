@@ -61,7 +61,7 @@ jobs:
                 source secrets-output/secrets.env
                 
                 # Use curl to log in to Screener.in
-                curl -X POST https://www.screener.in/login/ \
+                curl.exe -X POST https://www.screener.in/login/ \
                   -d "email=$Email" \
                   -d "password=$Password" \
                   -c cookies.txt \
