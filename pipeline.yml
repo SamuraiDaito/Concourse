@@ -19,8 +19,6 @@ jobs:
             source:
               repository: hashicorp/vault
               tag: latest
-          outputs:
-            - name: secrets-output
           run:
             path: sh
             args:
@@ -33,16 +31,7 @@ jobs:
                 # Fetch secrets from Vault
                 id=$(vault kv get -field=id secret/data/myapp)
                 password=$(vault kv get -field=password secret/data/myapp)
- 
-                # Store secrets in a file
-                echo "export ID=$id" > secrets-output/secrets.sh
-                echo "export PASSWORD=$password" >> secrets-output/secrets.sh
-                chmod +x secrets-output/secrets.sh
- 
-                # Debugging: List the contents of the secrets directory
-                echo "Contents of secrets-output directory:"
-                ls -l secrets-output
- 
-                # Debugging: Print the contents of the secrets file
-                echo "Contents of secrets.sh:"
-                cat secrets-output/secrets.sh
+
+                # Debugging: Print the secrets
+                echo "ID: $id"
+                echo "PASSWORD: $password"
