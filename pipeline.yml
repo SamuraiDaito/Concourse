@@ -39,12 +39,16 @@ jobs:
                 echo "Password: $Password"
 
                 # Export credentials for use in the next task
-                mkdir -p secrets-output
-                echo "EMAIL=$Email" > secrets-output/secrets.env
-                echo "PASSWORD=$Password" >> secrets-output/secrets.env
+                echo "EMAIL=$Email" > secrets-output/secrets.sh
+                echo "PASSWORD=$Password" >> secrets-output/secrets.sh
+                chmod +x secrets-output/secrets.sh
 
+                # List content of directory
                 ls -l secrets-output
-                cat secrets-output
+
+                #Print content of secrets file
+                echo "Contents of file:"
+                cat secrets-output/secrets.sh
 
       - task: run-login-script
         config:
