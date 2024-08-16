@@ -32,7 +32,7 @@ login_response = session.post(login_url, data=login_data, headers={"Referer": lo
 # Check if login was successful
 if login_response.url == "https://www.screener.in/dash/":
     print("Login successful!")
-    
+
     # URL for Reliance company's Profit & Loss page
     reliance_url = "https://www.screener.in/company/RELIANCE/"
     
@@ -41,7 +41,7 @@ if login_response.url == "https://www.screener.in/dash/":
     page_soup = BeautifulSoup(page_response.text, 'html.parser')
     
     # Find the "Profit & Loss" section
-    profit_loss_section = page_soup.find('h2', text="Profit & Loss").find_next('table')
+    profit_loss_section = page_soup.find('h2', string="Profit & Loss").find_next('table')
     
     if profit_loss_section:
         # Extract table headers
