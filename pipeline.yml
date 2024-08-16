@@ -1,10 +1,3 @@
-resources:
-  - name: getappdata
-    type: git
-    source:
-      uri: "https://github.com/SamuraiDaito/Concourse.git"
-      branch: main
-
 jobs:
   - name: fetch-secrets-and-run-script
     plan:
@@ -59,19 +52,15 @@ jobs:
               - |
                 # Update apk and check if curl and awk are available
                 apk update
-                apk info | grep curl || apk add --no-cache curl
-                apk info | grep awk || apk add --no-cache awk
+                apk add --no-cache curl awk
 
                 # Source the secrets file
                 source secrets-output/secrets.env
 
-                # Fetch login page to get CSRF token
-                csrf_token=$(curl -s https://www.screener.in/login/ | awk -F'csrf_token' '{print $2}' | awk -F'value="' '{print $2}' | awk -F'"' '{print $1}')
-
-                # Login with CSRF token and credentials
-                curl -X POST https://www.screener.in/login/ \
-                  -d "email=$Email" \
-                  -d "password=$Password" \
-                  -d "csrf_token=$csrf_token" \
+                # Login with multipart form data
+                curl -k -X POST \
                   -c cookies.txt \
-                  -v
+                  -H 'Content-Type: multipart/form-data' \
+                  "https://www.screener.in/login/" \
+                  -F "email=$Email" \
+                  -F "password=$Password"
