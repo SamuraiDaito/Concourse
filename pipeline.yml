@@ -96,7 +96,6 @@ jobs:
               - |
                 # Install dependencies
                 pip install beautifulsoup4 requests
-                pip install tabulate
 
                 # Source the secrets.sh file to load environment variables
                 . secrets-output/secrets.sh
