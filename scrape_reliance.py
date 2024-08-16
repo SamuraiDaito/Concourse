@@ -1,6 +1,7 @@
 import os
 import requests
 from bs4 import BeautifulSoup
+from tabulate import tabulate
 
 # Load credentials from environment variables
 email = os.getenv("EMAIL")
@@ -39,36 +40,25 @@ if login_response.url == "https://www.screener.in/dash/":
     print("Login successful!")
 
     # URL for Reliance company's Profit & Loss page
-    reliance_url = "https://www.screener.in/company/RELIANCE/consolidated/"
+    reliance_url = "https://www.screener.in/company/RELIANCE/"
     
     # Fetch the page content
     page_response = session.get(reliance_url)
     page_soup = BeautifulSoup(page_response.text, 'html.parser')
     
-    # Debug print to check page content
-    # print(page_soup.prettify()[:2000])  # Print first 2000 characters for inspection
+    # Use CSS selector to find the relevant table
+    rows = page_soup.select_one('body main section:nth-of-type(5) div:nth-of-type(3)').find_all('tr')
     
-    # Find the "Profit & Loss" section
-    profit_loss_section = page_soup.find('h2', string="Profit & Loss")
+    # Extract table data
+    table_data = []
+    headers = [col.text.strip() for col in rows[0].find_all('th')]  # Extract headers from the first row
     
-    if profit_loss_section:
-        table = profit_loss_section.find_next('table')
-        
-        if table:
-            # Extract table headers
-            headers = [header.get_text(strip=True) for header in table.find_all('th')]
-            print(f"Headers: {headers}")
-            
-            # Extract table rows
-            rows = table.find_all('tr')
-            for row in rows:
-                columns = row.find_all('td')
-                column_data = [column.get_text(strip=True) for column in columns]
-                if column_data:
-                    print(column_data)
-        else:
-            print("Table not found in Profit & Loss section!")
-    else:
-        print("Profit & Loss section not found!")
+    for row in rows[1:]:
+        cols = [col.text.strip() for col in row.find_all('td')]
+        if cols:
+            table_data.append(cols)
+    
+    # Print the table in a formatted view
+    print(tabulate(table_data, headers=headers, tablefmt='grid'))
 else:
     print("Login failed!")
