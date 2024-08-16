@@ -22,4 +22,5 @@ jobs:
         - -c
         - |
           apk add --no-cache curl jq bash
+          chmod +x getappdata-repo/getappdata.sh
           ./getappdata-repo/getappdata.sh
