@@ -34,47 +34,34 @@ jobs:
                 Email=$(vault kv get -field=Email secret/screener)
                 Password=$(vault kv get -field=Password secret/screener)
 
-                # Store secrets in a file
-                echo "Email=$Email" > secrets-output/secrets.env
-                echo "Password=$Password" >> secrets-output/secrets.env
-
                 # Print the secrets
                 echo "Email: $Email"
                 echo "Password: $Password"
 
-      - task: login-to-screener
+                # Export credentials for use in the next task
+                echo "EMAIL=$Email" > secrets-output/secrets.env
+                echo "PASSWORD=$Password" >> secrets-output/secrets.env
+
+      - task: run-login-script
         config:
           platform: linux
           image_resource:
             type: docker-image
             source:
-              repository: alpine
-              tag: latest
+              repository: python
+              tag: 3.9
           inputs:
+            - name: getappdata
+          outputs:
             - name: secrets-output
           run:
             path: sh
             args:
               - -c
               - |
-                # Install required packages
-                apk add --no-cache curl grep
-                
-                # Source the secrets file
-                source secrets-output/secrets.env
-                
-                # Fetch CSRF Token from the login page
-                csrf_response=$(curl -s -c cookies.txt "https://www.screener.in/login/")
-                csrf_token=$(echo "$csrf_response" | grep -oP 'name="csrfmiddlewaretoken" value="\K[^"]+')
-                
-                # Perform login with CSRF Token
-                curl -k -X POST \
-                  -b cookies.txt \
-                  -c cookies.txt \
-                  -H 'Content-Type: multipart/form-data; boundary=------------------------GS4aQFgnbxtLpMymaLaYIJ' \
-                  -H 'Referer: https://www.screener.in/login/' \
-                  -F "username=$Email" \
-                  -F "password=$Password" \
-                  -F "csrfmiddlewaretoken=$csrf_token" \
-                  "https://www.screener.in/login/" \
-                  -v
+                # Install dependencies
+                pip install beautifulsoup4 requests
+
+                # Run the login script
+                export $(cat secrets-output/secrets.env)
+                python getappdata/login.py
