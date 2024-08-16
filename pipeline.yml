@@ -1,8 +1,8 @@
 resources:
-  - name: python-script-repo
+  - name: getappdata
     type: git
     source:
-      uri: "https://github.com/SamuraiDaito/Concourse.git.git"
+      uri: "https://github.com/SamuraiDaito/Concourse.git"
       branch: main
 jobs:
 - name: fetch-secrets
