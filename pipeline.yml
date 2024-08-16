@@ -4,21 +4,23 @@ resources:
     source:
       uri: "https://github.com/SamuraiDaito/Concourse.git"
       branch: main
+
 jobs:
-- name: fetch-secrets
-  plan:
-  - get: getappdata
-    trigger: true
-  - task: fetch-secrets-task
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source: 
-          repository: vault:1.13.3
-          tag: latest
-      outputs:
-        - name: secrets-output
+  - name: fetch-secrets-and-run-script
+    plan:
+      - get: getappdata
+        trigger: true
+
+      - task: fetch-secrets
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: hashicorp/vault
+              tag: latest
+          outputs:
+            - name: secrets-output
           run:
             path: sh
             args:
@@ -29,11 +31,11 @@ jobs:
                 export VAULT_TOKEN='root'
                
                 # Fetch secrets from Vault
-                username=$(vault kv get -field=id secret/data/myapp)
+                username=$(vault kv get -field=username secret/data/myapp)
                 password=$(vault kv get -field=password secret/data/myapp)
  
                 # Store secrets in a file
-                echo "export ID=$id" > secrets-output/secrets.sh
+                echo "export USERNAME=$username" > secrets-output/secrets.sh
                 echo "export PASSWORD=$password" >> secrets-output/secrets.sh
                 chmod +x secrets-output/secrets.sh
  
@@ -44,3 +46,23 @@ jobs:
                 # Debugging: Print the contents of the secrets file
                 echo "Contents of secrets.sh:"
                 cat secrets-output/secrets.sh
+
+      - task: run-appdata-script
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: alpine
+              tag: latest
+          inputs:
+            - name: getappdata
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                # Make sure the script is executable
+                chmod +x getappdata/getappdata.sh
+                # Run the script
+                ./getappdata.sh
