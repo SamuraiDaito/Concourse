@@ -27,8 +27,8 @@ jobs:
               - -c
               - |
                 # Set Vault address and token
-                export VAULT_ADDR='http://127.0.0.1:8200'
-                export VAULT_TOKEN='abcd1234
+                export VAULT_ADDR='http://localhost:8200'
+                export VAULT_TOKEN='abcd1234'
                
                 # Fetch secrets from Vault
                 id=$(vault kv get -field=id secret/data/myapp)
@@ -46,23 +46,3 @@ jobs:
                 # Debugging: Print the contents of the secrets file
                 echo "Contents of secrets.sh:"
                 cat secrets-output/secrets.sh
-
-      - task: run-appdata-script
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: alpine
-              tag: latest
-          inputs:
-            - name: getappdata
-          run:
-            path: sh
-            args:
-              - -c
-              - |
-                # Make sure the script is executable
-                chmod +x getappdata/getappdata.sh
-                # Run the script
-                ./getappdata.sh
