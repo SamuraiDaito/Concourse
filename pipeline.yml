@@ -27,7 +27,7 @@ jobs:
               - -c
               - |
                 # Set Vault address and token
-                export VAULT_ADDR='http://0.0.0.0:8200'
+                export VAULT_ADDR='http://127.0.0.1:8200'
                 export VAULT_TOKEN='abcd1234
                
                 # Fetch secrets from Vault
