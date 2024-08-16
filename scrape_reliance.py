@@ -33,21 +33,25 @@ login_response = session.post(login_url, data=login_data, headers={"Referer": lo
 # Check if login was successful
 if login_response.url == "https://www.screener.in/dash/":
     print("Login successful!")
-    # Open the dashboard in the default web browser (optional)
-    # webbrowser.open(login_response.url)
     
-    # Navigate to the Reliance company page
-    reliance_url = "https://www.screener.in/company/RELIANCE/consolidated/"
-    reliance_response = session.get(reliance_url)
-    reliance_soup = BeautifulSoup(reliance_response.text, 'html.parser')
+    # URL for Reliance company's Profit & Loss page
+    reliance_url = "https://www.screener.in/company/RELIANCE/"
     
-    # Extract Profit & Loss data
-    # You may need to adjust the selectors based on the page structure
-    pnl_section = reliance_soup.find('div', {'id': 'profit-loss'})
-    if pnl_section:
+    # Fetch the page content
+    page_response = session.get(reliance_url)
+    page_soup = BeautifulSoup(page_response.text, 'html.parser')
+    
+    # Find the "Profit & Loss" section
+    profit_loss_section = page_soup.find('h2', text="Profit & Loss").find_next('table')
+    
+    if profit_loss_section:
+        # Print the "Profit & Loss" data
         print("Profit & Loss Data for Reliance:")
-        print(pnl_section.get_text())
+        print(profit_loss_section.prettify())
     else:
-        print("Profit & Loss section not found.")
+        print("Profit & Loss section not found!")
+    
+    # Optionally open the Reliance page in a web browser
+    webbrowser.open(reliance_url)
 else:
     print("Login failed!")
