@@ -27,8 +27,8 @@ jobs:
               - -c
               - |
                 # Set Vault address and token
-                export VAULT_ADDR='http://localhost:8200'
-                export VAULT_TOKEN='root'
+                export VAULT_ADDR='http://0.0.0.0:8200'
+                export VAULT_TOKEN='abcd1234
                
                 # Fetch secrets from Vault
                 username=$(vault kv get -field=username secret/data/myapp)
