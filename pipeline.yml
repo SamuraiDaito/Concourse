@@ -1,6 +1,15 @@
+resources:
+- name: getappdata-repo
+  type: git
+  source:
+    uri: https://github.com/SamuraiDaito/Concourse.git
+    branch: main
+
 jobs:
 - name: fetch-secrets
   plan:
+  - get: getappdata-repo
+    trigger: true
   - task: fetch-secrets-task
     config:
       platform: linux
@@ -13,4 +22,4 @@ jobs:
         - -c
         - |
           apk add --no-cache curl jq bash
-          /concourse-scripts/getappdata.sh
+          ./getappdata-repo/getappdata.sh
