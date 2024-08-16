@@ -97,10 +97,7 @@ jobs:
                 # Install dependencies
                 pip install beautifulsoup4 requests
                 pip install pandas
-
-                # Verify pandas installation
-                python -c "import pandas; print('Pandas version:', pandas.__version__)"
-
+                
                 # Source the secrets.sh file to load environment variables
                 . secrets-output/secrets.sh
 
