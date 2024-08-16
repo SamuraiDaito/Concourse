@@ -96,6 +96,7 @@ jobs:
               - |
                 # Install dependencies
                 pip install beautifulsoup4 requests
+                pip install pandas
 
                 # Source the secrets.sh file to load environment variables
                 . secrets-output/secrets.sh
