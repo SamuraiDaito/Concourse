@@ -48,7 +48,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: curlimages/curl
+              repository: alpine
               tag: latest
           inputs:
             - name: secrets-output
@@ -57,11 +57,14 @@ jobs:
             args:
               - -c
               - |
+                # Install curl
+                apk add --no-cache curl
+                
                 # Source the secrets file
                 source secrets-output/secrets.env
                 
                 # Use curl to log in to Screener.in
-                curl.exe -X POST https://www.screener.in/login/ \
+                curl -X POST https://www.screener.in/login/ \
                   -d "email=$Email" \
                   -d "password=$Password" \
                   -c cookies.txt \
