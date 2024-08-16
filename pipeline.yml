@@ -19,6 +19,8 @@ jobs:
             source:
               repository: hashicorp/vault
               tag: latest
+          outputs:
+            - name: secrets-output
           run:
             path: sh
             args:
@@ -32,6 +34,35 @@ jobs:
                 Email=$(vault kv get -field=Email secret/screener)
                 Password=$(vault kv get -field=Password secret/screener)
 
-                # Print the secrets
-                echo "Email: $Email"
-                echo "Password: $Password"
+                # Store secrets in a file
+                echo "export USERNAME=$Email" > secrets-output/secrets.sh
+                echo "export PASSWORD=$Password" >> secrets-output/secrets.sh
+                chmod +x secrets-output/secrets.sh
+
+                # Debugging: List the contents of the secrets directory
+                echo "Contents of secrets-output directory:"
+                ls -l secrets-output
+
+                # Debugging: Print the contents of the secrets file
+                echo "Contents of secrets.sh:"
+                cat secrets-output/secrets.sh
+
+      - task: run-login-script
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: alpine
+              tag: latest
+          inputs:
+            - name: getappdata
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                # Make sure the script is executable
+                chmod +x getappdata/login.sh
+                # Run the login script
+                ./getappdata/login.sh
