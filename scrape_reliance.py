@@ -1,7 +1,7 @@
 import os
 import requests
+import pandas as pd
 from bs4 import BeautifulSoup
-from tabulate import tabulate
 
 # Load credentials from environment variables
 email = os.getenv("EMAIL")
@@ -46,19 +46,24 @@ if login_response.url == "https://www.screener.in/dash/":
     page_response = session.get(reliance_url)
     page_soup = BeautifulSoup(page_response.text, 'html.parser')
     
-    # Use CSS selector to find the relevant table
+    # Find the table data for Profit & Loss section
     rows = page_soup.select_one('body main section:nth-of-type(5) div:nth-of-type(3)').find_all('tr')
     
-    # Extract table data
-    table_data = []
-    headers = [col.text.strip() for col in rows[0].find_all('th')]  # Extract headers from the first row
-    
-    for row in rows[1:]:
+    # Initialize lists to store the table data
+    headers = []
+    data = []
+
+    for i, row in enumerate(rows):
         cols = [col.text.strip() for col in row.find_all('td')]
-        if cols:
-            table_data.append(cols)
-    
-    # Print the table in a formatted view
-    print(tabulate(table_data, headers=headers, tablefmt='grid'))
+        if i == 0:
+            headers = cols  # Store headers
+        else:
+            data.append(cols)  # Store data rows
+
+    # Create DataFrame from the collected data
+    df = pd.DataFrame(data, columns=headers)
+
+    # Print the DataFrame to check if data is correct
+    print(df)
 else:
     print("Login failed!")
