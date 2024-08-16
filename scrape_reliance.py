@@ -33,28 +33,35 @@ login_response = session.post(login_url, data=login_data, headers={"Referer": lo
 if login_response.url == "https://www.screener.in/dash/":
     print("Login successful!")
 
-    # URL for Reliance company's Profit & Loss page
-    reliance_url = "https://www.screener.in/company/RELIANCE/"
-    
-    # Fetch the page content
-    page_response = session.get(reliance_url)
-    page_soup = BeautifulSoup(page_response.text, 'html.parser')
-    
-    # Find the "Profit & Loss" section
-    profit_loss_section = page_soup.find('h2', string="Profit & Loss").find_next('table')
-    
-    if profit_loss_section:
-        # Extract table headers
-        headers = [header.get_text(strip=True) for header in profit_loss_section.find_all('th')]
-        print(f"Headers: {headers}")
+        # Replace with the actual URL
+        url = 'https://www.screener.in/company/RELIANCE/consolidated/#profit-loss'
         
-        # Extract table rows
-        rows = profit_loss_section.find_all('tr')
-        for row in rows:
-            columns = row.find_all('td')
-            column_data = [column.get_text(strip=True) for column in columns]
-            if column_data:
-                print(column_data)
+        # Send an HTTP request to the URL
+        response = requests.get(url)
+        
+        # Check if the request was successful
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.content, 'html.parser')
+            
+            # Find the table with class 'data-table'
+            table = soup.find('table', {'class': 'data-table'})
+            
+            # Extract headers
+            headers = [th.text.strip() for th in table.find('thead').find_all('th')]
+            
+            # Extract rows
+            data = []
+            for row in table.find('tbody').find_all('tr'):
+                columns = row.find_all('td')
+                data_row = [col.text.strip() for col in columns]
+                data.append(data_row)
+            
+            # Print headers and data
+            print("Headers:", headers)
+            for row in data:
+                print(row)
+        else:
+            print("Failed to retrieve the webpage")
     else:
         print("Profit & Loss section not found!")
 else:
