@@ -70,7 +70,11 @@ jobs:
                 pip install beautifulsoup4 requests
 
                 # Source the secrets.sh file to load environment variables
-                source secrets-output/secrets.sh
+                . secrets-output/secrets.sh
+
+                # Debugging: Print the loaded environment variables
+                echo "Loaded Email: $EMAIL"
+                echo "Loaded Password: $PASSWORD"
 
                 # Run the login script
                 python getappdata/login.py
