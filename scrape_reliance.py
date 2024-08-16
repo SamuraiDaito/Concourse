@@ -1,17 +1,17 @@
-import os
+import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
 # Load credentials from environment variables
+import os
 email = os.getenv("EMAIL")
 password = os.getenv("PASSWORD")
 
-# Print loaded credentials (for debugging)
-print(f"Loaded Email: {email}")
-print(f"Loaded Password: {password}")
+# URL for Reliance company's Profit & Loss page
+login_url = "https://www.screener.in/login/"
+reliance_url = "https://www.screener.in/company/RELIANCE/"
 
 # Use requests to log in to Screener.in
-login_url = "https://www.screener.in/login/"
 session = requests.Session()
 response = session.get(login_url)
 soup = BeautifulSoup(response.text, 'html.parser')
@@ -38,16 +38,10 @@ login_response = session.post(login_url, data=login_data, headers={"Referer": lo
 if login_response.url == "https://www.screener.in/dash/":
     print("Login successful!")
 
-    # URL for Reliance company's Profit & Loss page
-    reliance_url = "https://www.screener.in/company/RELIANCE/consolidated/"
-    
     # Fetch the page content
     page_response = session.get(reliance_url)
     page_soup = BeautifulSoup(page_response.text, 'html.parser')
-    
-    # Debug print to check page content
-    # print(page_soup.prettify()[:2000])  # Print first 2000 characters for inspection
-    
+
     # Find the "Profit & Loss" section
     profit_loss_section = page_soup.find('h2', string="Profit & Loss")
     
@@ -60,12 +54,19 @@ if login_response.url == "https://www.screener.in/dash/":
             print(f"Headers: {headers}")
             
             # Extract table rows
+            data = []
             rows = table.find_all('tr')
             for row in rows:
                 columns = row.find_all('td')
                 column_data = [column.get_text(strip=True) for column in columns]
                 if column_data:
-                    print(column_data)
+                    data.append(column_data)
+
+            # Create a DataFrame
+            df = pd.DataFrame(data, columns=headers)
+            # Save DataFrame to CSV
+            df.to_csv('profit_loss_data.csv', index=False)
+            print("Data saved to profit_loss_data.csv")
         else:
             print("Table not found in Profit & Loss section!")
     else:
