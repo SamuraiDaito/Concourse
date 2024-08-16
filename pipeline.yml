@@ -58,7 +58,7 @@ jobs:
               - -c
               - |
                 # Install curl and awk
-                apk add --no-cache curl awk
+                apk update && apk add --no-cache curl awk
 
                 # Source the secrets file
                 source secrets-output/secrets.env
