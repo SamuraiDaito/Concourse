@@ -78,3 +78,31 @@ jobs:
 
                 # Run the login script
                 python getappdata/login.py
+      - task: scrape-reliance-data
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: python
+              tag: 3.9
+          inputs:
+            - name: getappdata
+            - name: secrets-output
+          run:
+            path: sh
+            args:
+              - -c
+              - |
+                # Install dependencies
+                pip install beautifulsoup4 requests
+
+                # Source the secrets.sh file to load environment variables
+                . secrets-output/secrets.sh
+
+                # Debugging: Print the loaded environment variables
+                echo "Loaded Email: $EMAIL"
+                echo "Loaded Password: $PASSWORD"
+
+                # Run the scrape script
+                python getappdata/scrape_reliance.py
