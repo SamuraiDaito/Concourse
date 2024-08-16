@@ -31,11 +31,11 @@ jobs:
                 export VAULT_TOKEN='abcd1234
                
                 # Fetch secrets from Vault
-                username=$(vault kv get -field=username secret/data/myapp)
+                id=$(vault kv get -field=id secret/data/myapp)
                 password=$(vault kv get -field=password secret/data/myapp)
  
                 # Store secrets in a file
-                echo "export USERNAME=$username" > secrets-output/secrets.sh
+                echo "export ID=$id" > secrets-output/secrets.sh
                 echo "export PASSWORD=$password" >> secrets-output/secrets.sh
                 chmod +x secrets-output/secrets.sh
  
