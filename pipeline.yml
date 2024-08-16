@@ -35,34 +35,34 @@ jobs:
                 Password=$(vault kv get -field=Password secret/screener)
 
                 # Store secrets in a file
-                echo "export USERNAME=$Email" > secrets-output/secrets.sh
-                echo "export PASSWORD=$Password" >> secrets-output/secrets.sh
-                chmod +x secrets-output/secrets.sh
+                echo "Email=$Email" > secrets-output/secrets.env
+                echo "Password=$Password" >> secrets-output/secrets.env
 
-                # Debugging: List the contents of the secrets directory
-                echo "Contents of secrets-output directory:"
-                ls -l secrets-output
+                # Print the secrets
+                echo "Email: $Email"
+                echo "Password: $Password"
 
-                # Debugging: Print the contents of the secrets file
-                echo "Contents of secrets.sh:"
-                cat secrets-output/secrets.sh
-
-      - task: run-login-script
+      - task: login-to-screener
         config:
           platform: linux
           image_resource:
             type: docker-image
             source:
-              repository: alpine
+              repository: curlimages/curl
               tag: latest
           inputs:
-            - name: getappdata
+            - name: secrets-output
           run:
             path: sh
             args:
               - -c
               - |
-                # Make sure the script is executable
-                chmod +x C:\Users\ManaliBhave\Documents\Concourse\getappdata\login.sh
-                # Run the login script
-                ./getappdata/login.sh
+                # Source the secrets file
+                source secrets-output/secrets.env
+                
+                # Use curl to log in to Screener.in
+                curl -X POST https://www.screener.in/login/ \
+                  -d "email=$Email" \
+                  -d "password=$Password" \
+                  -c cookies.txt \
+                  -v
