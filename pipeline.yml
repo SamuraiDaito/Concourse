@@ -29,8 +29,8 @@ jobs:
                 export VAULT_TOKEN='abcd1234'
                
                 # Fetch secrets from Vault
-                id=$(vault kv get -field=id secret/data/myapp)
-                password=$(vault kv get -field=password secret/data/myapp)
+                id=$(vault kv get -field=id secret/myapp)
+                password=$(vault kv get -field=password secret/myapp)
 
                 # Debugging: Print the secrets
                 echo "ID: $id"
