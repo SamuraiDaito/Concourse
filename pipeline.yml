@@ -1,5 +1,5 @@
 jobs:
-  - name: fetch-secrets-and-run-script
+  - name: getappdata
     plan:
       - get: getappdata
         trigger: true
