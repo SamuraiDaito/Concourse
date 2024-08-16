@@ -1,6 +1,7 @@
 import os
 import requests
 from bs4 import BeautifulSoup
+import webbrowser
 
 # Load credentials from environment variables
 email = os.getenv("EMAIL")
@@ -32,22 +33,21 @@ login_response = session.post(login_url, data=login_data, headers={"Referer": lo
 # Check if login was successful
 if login_response.url == "https://www.screener.in/dash/":
     print("Login successful!")
-
+    # Open the dashboard in the default web browser (optional)
+    # webbrowser.open(login_response.url)
+    
     # Navigate to the Reliance company page
-    reliance_url = "https://www.screener.in/company/RIL/"
+    reliance_url = "https://www.screener.in/company/RELIANCE/consolidated/"
     reliance_response = session.get(reliance_url)
     reliance_soup = BeautifulSoup(reliance_response.text, 'html.parser')
-
-    # Extract the Profit and Loss table
-    pl_table = reliance_soup.find('table', {'class': 'table table-hover'})
     
-    if pl_table:
-        print("Profit and Loss Table:")
-        for row in pl_table.find_all('tr'):
-            cols = row.find_all('td')
-            cols = [col.text.strip() for col in cols]
-            print("\t".join(cols))
+    # Extract Profit & Loss data
+    # You may need to adjust the selectors based on the page structure
+    pnl_section = reliance_soup.find('div', {'id': 'profit-loss'})
+    if pnl_section:
+        print("Profit & Loss Data for Reliance:")
+        print(pnl_section.get_text())
     else:
-        print("Profit and Loss table not found.")
+        print("Profit & Loss section not found.")
 else:
     print("Login failed!")
