@@ -87,7 +87,10 @@ if login_response.url == "https://www.screener.in/dash/":
                 
                 # Create a DataFrame
                 df = pd.DataFrame(data, columns=headers)
-                
+
+                # Remove any trailing empty columns from the DataFrame
+                df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+
                 # Connect to PostgreSQL database
                 try:
                     conn = psycopg2.connect(
@@ -119,10 +122,10 @@ if login_response.url == "https://www.screener.in/dash/":
                     """
                     cursor.execute(create_table_query)
                     
-                    # Remove empty headers from DataFrame
+                    # Remove empty headers and adjust DataFrame
                     headers = [header for header in headers if header]
                     df.columns = headers
-                    
+
                     # Insert data into the table
                     insert_query = sql.SQL("""
                         INSERT INTO profit_loss ({})
