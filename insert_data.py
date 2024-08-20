@@ -72,68 +72,75 @@ if login_response.url == "https://www.screener.in/dash/":
                 if column_data:
                     data.append([''] + column_data)  # Add an empty value for 'Parameters'
             
-            # Debugging: Print the first row of data to check the column count
+            # Check number of columns in data and headers
             if data:
-                print(f"First row of data: {data[0]}")
-                print(f"Number of columns in data: {len(data[0])}")
-                print(f"Number of headers: {len(headers)}")
-            
-            # Create a DataFrame
-            df = pd.DataFrame(data, columns=headers)
-            
-            # Connect to PostgreSQL database
-            try:
-                conn = psycopg2.connect(
-                    dbname=db_name,
-                    user=db_user,
-                    password=db_password,
-                    host=db_host,
-                    port=db_port
-                )
-                cursor = conn.cursor()
+                num_data_columns = len(data[0])
+                num_headers = len(headers)
+                print(f"Number of columns in data: {num_data_columns}")
+                print(f"Number of headers: {num_headers}")
+
+                # Adjust data if there are extra columns
+                if num_data_columns > num_headers:
+                    data = [row[:num_headers] for row in data]
+                elif num_data_columns < num_headers:
+                    headers = headers[:num_data_columns]
                 
-                # Create table if it doesn't exist
-                create_table_query = """
-                CREATE TABLE IF NOT EXISTS profit_loss (
-                    "Parameters" TEXT,
-                    "Mar 2013" TEXT,
-                    "Mar 2014" TEXT,
-                    "Mar 2015" TEXT,
-                    "Mar 2016" TEXT,
-                    "Mar 2017" TEXT,
-                    "Mar 2018" TEXT,
-                    "Mar 2019" TEXT,
-                    "Mar 2020" TEXT,
-                    "Mar 2021" TEXT,
-                    "Mar 2022" TEXT,
-                    "Mar 2023" TEXT,
-                    "Mar 2024" TEXT,
-                    "TTM" TEXT
-                )
-                """
-                cursor.execute(create_table_query)
+                # Create a DataFrame
+                df = pd.DataFrame(data, columns=headers)
                 
-                # Insert data into the table
-                insert_query = sql.SQL("""
-                    INSERT INTO profit_loss ({})
-                    VALUES ({})
-                    ON CONFLICT ("Parameters") DO NOTHING
-                """).format(
-                    sql.SQL(', ').join(map(sql.Identifier, headers)),
-                    sql.SQL(', ').join(sql.Placeholder() * len(headers))
-                )
-                
-                for index, row in df.iterrows():
-                    cursor.execute(insert_query, row.tolist())
-                
-                # Commit changes and close the connection
-                conn.commit()
-                cursor.close()
-                conn.close()
-                
-                print("Data inserted successfully into PostgreSQL!")
-            except Exception as e:
-                print(f"Database connection failed: {e}")
+                # Connect to PostgreSQL database
+                try:
+                    conn = psycopg2.connect(
+                        dbname=db_name,
+                        user=db_user,
+                        password=db_password,
+                        host=db_host,
+                        port=db_port
+                    )
+                    cursor = conn.cursor()
+                    
+                    # Create table if it doesn't exist
+                    create_table_query = """
+                    CREATE TABLE IF NOT EXISTS profit_loss (
+                        "Parameters" TEXT,
+                        "Mar 2013" TEXT,
+                        "Mar 2014" TEXT,
+                        "Mar 2015" TEXT,
+                        "Mar 2016" TEXT,
+                        "Mar 2017" TEXT,
+                        "Mar 2018" TEXT,
+                        "Mar 2019" TEXT,
+                        "Mar 2020" TEXT,
+                        "Mar 2021" TEXT,
+                        "Mar 2022" TEXT,
+                        "Mar 2023" TEXT,
+                        "Mar 2024" TEXT,
+                        "TTM" TEXT
+                    )
+                    """
+                    cursor.execute(create_table_query)
+                    
+                    # Insert data into the table
+                    insert_query = sql.SQL("""
+                        INSERT INTO profit_loss ({})
+                        VALUES ({})
+                        ON CONFLICT ("Parameters") DO NOTHING
+                    """).format(
+                        sql.SQL(', ').join(map(sql.Identifier, headers)),
+                        sql.SQL(', ').join(sql.Placeholder() * len(headers))
+                    )
+                    
+                    for index, row in df.iterrows():
+                        cursor.execute(insert_query, row.tolist())
+                    
+                    # Commit changes and close the connection
+                    conn.commit()
+                    cursor.close()
+                    conn.close()
+                    
+                    print("Data inserted successfully into PostgreSQL!")
+                except Exception as e:
+                    print(f"Database connection failed: {e}")
         else:
             print("Table not found in Profit & Loss section!")
     else:
