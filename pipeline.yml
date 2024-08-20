@@ -96,6 +96,5 @@ jobs:
             args:
               - -c
               - |
-                pip install beautifulsoup4 requests pandas
-                pip install pandas psycopg2-binary sqlalchemy
+                pip install beautifulsoup4 requests pandas psycopg2 
                 python getappdata/insert_data.py
