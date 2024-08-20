@@ -137,6 +137,6 @@ jobs:
             args:
               - -c
               - |
-                pip install pandas psycopg2
+                pip install pandas sqlalchemy
                 . secrets-output/secrets.sh
                 python getappdata/csvtodatabase.py
