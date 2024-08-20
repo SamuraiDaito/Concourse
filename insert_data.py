@@ -60,6 +60,7 @@ if login_response.url == "https://www.screener.in/dash/":
         if table:
             # Extract table headers
             headers = [header.get_text(strip=True) for header in table.find_all('th')]
+            headers = [header for header in headers if header]  # Remove empty headers
             print(f"Headers: {headers}")
 
             # Extract table rows
@@ -117,6 +118,10 @@ if login_response.url == "https://www.screener.in/dash/":
                     )
                     """
                     cursor.execute(create_table_query)
+                    
+                    # Remove empty headers from DataFrame
+                    headers = [header for header in headers if header]
+                    df.columns = headers
                     
                     # Insert data into the table
                     insert_query = sql.SQL("""
