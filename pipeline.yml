@@ -67,8 +67,6 @@ jobs:
           inputs:
             - name: getappdata
             - name: secrets-output
-          outputs:
-            - name: data-output
           run:
             path: sh
             args:
@@ -88,7 +86,7 @@ jobs:
               tag: 3.9
           inputs:
             - name: getappdata
-            - name: data-output
+            - name: secrets-output
           run:
             path: sh
             args:
