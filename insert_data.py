@@ -62,7 +62,7 @@ if login_response.url == "https://www.screener.in/dash/":
             headers = [header.get_text(strip=True) for header in table.find_all('th')]
             headers = [header for header in headers if header]  # Remove empty headers
             print(f"Headers: {headers}")
-            
+
             # Extract table rows
             data = []
             rows = table.find_all('tr')
@@ -71,6 +71,20 @@ if login_response.url == "https://www.screener.in/dash/":
                 column_data = [column.get_text(strip=True) for column in columns]
                 if column_data:
                     data.append(column_data)
+            
+            # Debugging: Print the first row of data to check the column count
+            if data:
+                print(f"First row of data: {data[0]}")
+                print(f"Number of columns in data: {len(data[0])}")
+                print(f"Number of headers: {len(headers)}")
+            
+            # Ensure the data has the same number of columns as headers
+            if len(headers) != len(data[0]):
+                print("Mismatch between headers and data columns. Adjusting...")
+                # Adjust data to match headers
+                for i in range(len(data)):
+                    if len(data[i]) > len(headers):
+                        data[i] = data[i][:len(headers)]
 
             # Create a DataFrame
             df = pd.DataFrame(data, columns=headers)
