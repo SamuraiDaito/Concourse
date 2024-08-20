@@ -124,7 +124,6 @@ if login_response.url == "https://www.screener.in/dash/":
                     insert_query = sql.SQL("""
                         INSERT INTO profit_loss ({})
                         VALUES ({})
-                        ON CONFLICT ("Parameters") DO NOTHING
                     """).format(
                         sql.SQL(', ').join(map(sql.Identifier, headers)),
                         sql.SQL(', ').join(sql.Placeholder() * len(headers))
