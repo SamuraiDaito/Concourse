@@ -1,16 +1,19 @@
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from sqlalchemy import create_engine
+import psycopg2
 import os
 
 # Load credentials from environment variables
 email = os.getenv("EMAIL")
 password = os.getenv("PASSWORD")
 
-# Print credentials to verify (remove or comment this in production)
-print(f"Email: {email}")
-print(f"Password: {password}")
+# Database connection parameters
+db_name = "concourse"
+db_user = "concourse_user"
+db_password = "concourse_pass"
+db_host = "localhost"
+db_port = "5432"
 
 # URL for Reliance company's Profit & Loss page
 login_url = "https://www.screener.in/login/"
@@ -25,7 +28,6 @@ soup = BeautifulSoup(response.text, 'html.parser')
 csrf_token = soup.find('input', {'name': 'csrfmiddlewaretoken'})
 if csrf_token:
     csrf_token = csrf_token['value']
-    print(f"CSRF Token: {csrf_token}")  # Debugging print
 else:
     print("CSRF token not found!")
     exit()
@@ -37,21 +39,91 @@ login_data = {
     "csrfmiddlewaretoken": csrf_token
 }
 
-# Add headers to mimic a real browser
-headers = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "Referer": login_url
-}
-
 # Post the login data to the form
-login_response = session.post(login_url, data=login_data, headers=headers)
-
-# Print the response to understand what went wrong
-print(login_response.text)  # Debugging print
+login_response = session.post(login_url, data=login_data, headers={"Referer": login_url})
 
 # Check if login was successful
 if login_response.url == "https://www.screener.in/dash/":
     print("Login successful!")
-    # Proceed with scraping and database insertion...
+
+    # Fetch the page content
+    page_response = session.get(reliance_url)
+    page_soup = BeautifulSoup(page_response.text, 'html.parser')
+
+    # Find the "Profit & Loss" section
+    profit_loss_section = page_soup.find('h2', string="Profit & Loss")
+    
+    if profit_loss_section:
+        table = profit_loss_section.find_next('table')
+        
+        if table:
+            # Extract table headers
+            headers = [header.get_text(strip=True) for header in table.find_all('th')]
+            print(f"Headers: {headers}")
+            
+            # Extract table rows
+            data = []
+            rows = table.find_all('tr')
+            for row in rows:
+                columns = row.find_all('td')
+                column_data = [column.get_text(strip=True) for column in columns]
+                if column_data:
+                    data.append(column_data)
+
+            # Create a DataFrame
+            df = pd.DataFrame(data, columns=headers)
+
+            # Connect to PostgreSQL
+            conn = psycopg2.connect(
+                dbname=db_name,
+                user=db_user,
+                password=db_password,
+                host=db_host,
+                port=db_port
+            )
+            cursor = conn.cursor()
+
+            # Create table if not exists
+            create_table_query = """
+            CREATE TABLE IF NOT EXISTS profit_loss (
+                "Year" VARCHAR(255),
+                "Sales" VARCHAR(255),
+                "Expenses" VARCHAR(255),
+                "Operating Profit" VARCHAR(255),
+                "OPM %" VARCHAR(255),
+                "Other Income" VARCHAR(255),
+                "Interest" VARCHAR(255),
+                "Depreciation" VARCHAR(255),
+                "Profit before tax" VARCHAR(255),
+                "Tax %" VARCHAR(255),
+                "Net Profit" VARCHAR(255),
+                "EPS in Rs" VARCHAR(255),
+                "Dividend Payout %" VARCHAR(255)
+            );
+            """
+            cursor.execute(create_table_query)
+            conn.commit()
+
+            # Insert data into PostgreSQL
+            for i, row in df.iterrows():
+                insert_query = """
+                INSERT INTO profit_loss ("Year", "Sales", "Expenses", "Operating Profit", "OPM %", "Other Income", 
+                                         "Interest", "Depreciation", "Profit before tax", "Tax %", "Net Profit", 
+                                         "EPS in Rs", "Dividend Payout %")
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+                """
+                cursor.execute(insert_query, tuple(row))
+            conn.commit()
+
+            print("Data inserted into PostgreSQL database successfully.")
+
+            # Close the cursor and connection
+            cursor.close()
+            conn.close()
+
+        else:
+            print("Table not found in Profit & Loss section!")
+    else:
+        print("Profit & Loss section not found!")
 else:
     print("Login failed!")
