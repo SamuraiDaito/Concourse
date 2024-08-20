@@ -60,6 +60,7 @@ if login_response.url == "https://www.screener.in/dash/":
         if table:
             # Extract table headers
             headers = [header.get_text(strip=True) for header in table.find_all('th')]
+            headers = [header for header in headers if header]  # Remove empty headers
             print(f"Headers: {headers}")
             
             # Extract table rows
@@ -86,9 +87,9 @@ if login_response.url == "https://www.screener.in/dash/":
                 cursor = conn.cursor()
                 
                 # Create table if it doesn't exist
-                cursor.execute("""
+                create_table_query = """
                 CREATE TABLE IF NOT EXISTS profit_loss (
-                    "Year" TEXT PRIMARY KEY,
+                    "Date" TEXT PRIMARY KEY,
                     "Sales" TEXT,
                     "Expenses" TEXT,
                     "Operating Profit" TEXT,
@@ -101,18 +102,21 @@ if login_response.url == "https://www.screener.in/dash/":
                     "Net Profit" TEXT,
                     "EPS" TEXT
                 )
-                """)
+                """
+                cursor.execute(create_table_query)
                 
                 # Insert data into the table
+                insert_query = sql.SQL("""
+                    INSERT INTO profit_loss ({})
+                    VALUES ({})
+                    ON CONFLICT ("Date") DO NOTHING
+                """).format(
+                    sql.SQL(', ').join(map(sql.Identifier, df.columns)),
+                    sql.SQL(', ').join(sql.Placeholder() * len(df.columns))
+                )
+                
                 for index, row in df.iterrows():
-                    cursor.execute(sql.SQL("""
-                        INSERT INTO profit_loss ({})
-                        VALUES ({})
-                        ON CONFLICT ("Year") DO NOTHING
-                    """).format(
-                        sql.SQL(', ').join(map(sql.Identifier, df.columns)),
-                        sql.SQL(', ').join(sql.Placeholder() * len(row))
-                    ), row.tolist())
+                    cursor.execute(insert_query, row.tolist())
                 
                 # Commit changes and close the connection
                 conn.commit()
