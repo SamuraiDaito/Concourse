@@ -6,7 +6,7 @@ import os
 db_name = "concourse"
 db_user = "concourse_user"
 db_password = "concourse_pass"
-db_host = "192.168.3.109"  
+db_host = "192.168.3.109"
 db_port = "5432"
 
 # Path to the CSV file
@@ -44,13 +44,13 @@ try:
     """
     cursor.execute(create_table_query)
     
-    # Read the CSV file into a DataFrame, skipping the index column if present
-    df = pd.read_csv(csv_file_path, index_col=0)
-    
+    # Read the CSV file into a DataFrame, dropping index column if present
+    df = pd.read_csv(csv_file_path)
+
     # Remove any leading/trailing spaces from column names
     df.columns = [col.strip() for col in df.columns]
-    
-    # Insert data into the table
+
+    # Generate SQL insert statements
     insert_query = """
         INSERT INTO relianceprofitlost ({})
         VALUES ({})
@@ -59,6 +59,7 @@ try:
         ', '.join(['%s'] * len(df.columns))
     )
 
+    # Insert each row into the table
     for index, row in df.iterrows():
         cursor.execute(insert_query, row.tolist())
     
