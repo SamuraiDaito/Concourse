@@ -117,6 +117,5 @@ jobs:
                 pip install beautifulsoup4 requests pandas 
                 . secrets-output/secrets.sh
                 python getappdata/create_csv.py
-                mv profit_loss_data.csv ../profit_loss_data/
                 echo "Displaying contents of CSV file:"
                 cat profit_loss_data/profit_loss_data.csv
