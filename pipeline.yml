@@ -119,3 +119,24 @@ jobs:
                 python getappdata/create_csv.py
                 echo "Displaying contents of CSV file:"
                 cat profit_loss_data/profit_loss_data.csv
+
+      - task: insert-csv-to-db
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: python
+              tag: 3.9
+          inputs:
+            - name: getappdata
+            - name: secrets-output
+            - name: profit_loss_data
+          run:
+            path: /bin/sh
+            args:
+              - -c
+              - |
+                pip install pandas psycopg2
+                . secrets-output/secrets.sh
+                python getappdata/csvtodatabase.py
