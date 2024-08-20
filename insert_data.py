@@ -59,7 +59,7 @@ if login_response.url == "https://www.screener.in/dash/":
         
         if table:
             # Extract table headers
-            headers = [header.get_text(strip=True) for header in table.find_all('th')]
+            headers = ['Parameters'] + [header.get_text(strip=True) for header in table.find_all('th')]
             headers = [header for header in headers if header]  # Remove empty headers
             print(f"Headers: {headers}")
 
@@ -70,7 +70,7 @@ if login_response.url == "https://www.screener.in/dash/":
                 columns = row.find_all('td')
                 column_data = [column.get_text(strip=True) for column in columns]
                 if column_data:
-                    data.append(column_data)
+                    data.append([''] + column_data)  # Add an empty value for 'Parameters'
             
             # Debugging: Print the first row of data to check the column count
             if data:
@@ -78,11 +78,6 @@ if login_response.url == "https://www.screener.in/dash/":
                 print(f"Number of columns in data: {len(data[0])}")
                 print(f"Number of headers: {len(headers)}")
             
-            # Adjust data to match headers
-            if len(headers) != len(data[0]):
-                print("Mismatch between headers and data columns. Adjusting...")
-                data = [row[:len(headers)] for row in data]
-
             # Create a DataFrame
             df = pd.DataFrame(data, columns=headers)
             
@@ -100,28 +95,31 @@ if login_response.url == "https://www.screener.in/dash/":
                 # Create table if it doesn't exist
                 create_table_query = """
                 CREATE TABLE IF NOT EXISTS profit_loss (
-                    "Date" TEXT PRIMARY KEY,
-                    "Sales" TEXT,
-                    "Expenses" TEXT,
-                    "Operating Profit" TEXT,
-                    "OPM" TEXT,
-                    "Other Income" TEXT,
-                    "Interest" TEXT,
-                    "Depreciation" TEXT,
-                    "Profit before tax" TEXT,
-                    "Tax" TEXT,
-                    "Net Profit" TEXT,
-                    "EPS" TEXT
+                    "Parameters" TEXT,
+                    "Mar 2013" TEXT,
+                    "Mar 2014" TEXT,
+                    "Mar 2015" TEXT,
+                    "Mar 2016" TEXT,
+                    "Mar 2017" TEXT,
+                    "Mar 2018" TEXT,
+                    "Mar 2019" TEXT,
+                    "Mar 2020" TEXT,
+                    "Mar 2021" TEXT,
+                    "Mar 2022" TEXT,
+                    "Mar 2023" TEXT,
+                    "Mar 2024" TEXT,
+                    "TTM" TEXT
                 )
                 """
                 cursor.execute(create_table_query)
                 
-                # Adjust the headers and columns to match the table schema
+                # Insert data into the table
                 insert_query = sql.SQL("""
-                    INSERT INTO profit_loss ("Date", "Sales", "Expenses", "Operating Profit", "OPM", "Other Income", "Interest", "Depreciation", "Profit before tax", "Tax", "Net Profit", "EPS")
+                    INSERT INTO profit_loss ({})
                     VALUES ({})
-                    ON CONFLICT ("Date") DO NOTHING
+                    ON CONFLICT ("Parameters") DO NOTHING
                 """).format(
+                    sql.SQL(', ').join(map(sql.Identifier, headers)),
                     sql.SQL(', ').join(sql.Placeholder() * len(headers))
                 )
                 
