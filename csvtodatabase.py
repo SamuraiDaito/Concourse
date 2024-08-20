@@ -46,13 +46,16 @@ try:
     
     # Read the CSV file into a DataFrame
     df = pd.read_csv(csv_file_path)
-
+    
+    # Remove any leading/trailing spaces from column names
+    df.columns = [col.strip() for col in df.columns]
+    
     # Insert data into the table
     insert_query = """
         INSERT INTO relianceprofitlost ({})
         VALUES ({})
     """.format(
-        ', '.join(df.columns),
+        ', '.join(f'"{col}"' for col in df.columns),
         ', '.join(['%s'] * len(df.columns))
     )
 
