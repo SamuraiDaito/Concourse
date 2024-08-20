@@ -95,3 +95,24 @@ jobs:
                 pip install beautifulsoup4 requests pandas psycopg2
                 . secrets-output/secrets.sh
                 python getappdata/insert_data.py
+      
+      - task: display-csv
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: python
+              tag: 3.9
+          inputs:
+            - name: getappdata
+            - name: secrets-output
+          outputs:
+            - name: profit_loss_data
+          run:
+            path: /bin/sh
+            args:
+              - -c
+              - |
+                echo "Displaying contents of CSV file:"
+                cat profit_loss_data/profit_loss_data.csv
