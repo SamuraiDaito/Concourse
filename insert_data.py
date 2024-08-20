@@ -59,7 +59,7 @@ if login_response.url == "https://www.screener.in/dash/":
         
         if table:
             # Extract table headers
-            headers = [header.get_text(strip=True) for header in table.find_all('th')]
+            headers = ['Parameters'] + [header.get_text(strip=True) for header in table.find_all('th')]
             headers = [header for header in headers if header]  # Remove empty headers
             print(f"Headers: {headers}")
 
@@ -70,7 +70,7 @@ if login_response.url == "https://www.screener.in/dash/":
                 columns = row.find_all('td')
                 column_data = [column.get_text(strip=True) for column in columns]
                 if column_data:
-                    data.append(column_data)
+                    data.append([''] + column_data)  # Add an empty value for 'Parameters'
             
             # Check number of columns in data and headers
             if data:
@@ -87,10 +87,7 @@ if login_response.url == "https://www.screener.in/dash/":
                 
                 # Create a DataFrame
                 df = pd.DataFrame(data, columns=headers)
-
-                # Remove any trailing empty columns from the DataFrame
-                df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
-
+                
                 # Connect to PostgreSQL database
                 try:
                     conn = psycopg2.connect(
@@ -105,6 +102,7 @@ if login_response.url == "https://www.screener.in/dash/":
                     # Create table if it doesn't exist
                     create_table_query = """
                     CREATE TABLE IF NOT EXISTS profit_loss (
+                        "Parameters" TEXT,
                         "Mar 2013" TEXT,
                         "Mar 2014" TEXT,
                         "Mar 2015" TEXT,
@@ -122,10 +120,10 @@ if login_response.url == "https://www.screener.in/dash/":
                     """
                     cursor.execute(create_table_query)
                     
-                    # Remove empty headers and adjust DataFrame
+                    # Remove empty headers from DataFrame
                     headers = [header for header in headers if header]
                     df.columns = headers
-
+                    
                     # Insert data into the table
                     insert_query = sql.SQL("""
                         INSERT INTO profit_loss ({})
