@@ -78,13 +78,10 @@ if login_response.url == "https://www.screener.in/dash/":
                 print(f"Number of columns in data: {len(data[0])}")
                 print(f"Number of headers: {len(headers)}")
             
-            # Ensure the data has the same number of columns as headers
+            # Adjust data to match headers
             if len(headers) != len(data[0]):
                 print("Mismatch between headers and data columns. Adjusting...")
-                # Adjust data to match headers
-                for i in range(len(data)):
-                    if len(data[i]) > len(headers):
-                        data[i] = data[i][:len(headers)]
+                data = [row[:len(headers)] for row in data]
 
             # Create a DataFrame
             df = pd.DataFrame(data, columns=headers)
@@ -119,14 +116,13 @@ if login_response.url == "https://www.screener.in/dash/":
                 """
                 cursor.execute(create_table_query)
                 
-                # Insert data into the table
+                # Adjust the headers and columns to match the table schema
                 insert_query = sql.SQL("""
-                    INSERT INTO profit_loss ({})
+                    INSERT INTO profit_loss ("Date", "Sales", "Expenses", "Operating Profit", "OPM", "Other Income", "Interest", "Depreciation", "Profit before tax", "Tax", "Net Profit", "EPS")
                     VALUES ({})
                     ON CONFLICT ("Date") DO NOTHING
                 """).format(
-                    sql.SQL(', ').join(map(sql.Identifier, df.columns)),
-                    sql.SQL(', ').join(sql.Placeholder() * len(df.columns))
+                    sql.SQL(', ').join(sql.Placeholder() * len(headers))
                 )
                 
                 for index, row in df.iterrows():
