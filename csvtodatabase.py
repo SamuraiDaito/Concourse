@@ -44,8 +44,8 @@ try:
     """
     cursor.execute(create_table_query)
     
-    # Read the CSV file into a DataFrame
-    df = pd.read_csv(csv_file_path)
+    # Read the CSV file into a DataFrame, skipping the index column if present
+    df = pd.read_csv(csv_file_path, index_col=0)
     
     # Remove any leading/trailing spaces from column names
     df.columns = [col.strip() for col in df.columns]
