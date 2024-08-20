@@ -66,7 +66,7 @@ if login_response.url == "https://www.screener.in/dash/":
             df = pd.DataFrame(data, columns=headers)
             
             # Save DataFrame to CSV
-            csv_file_path = '/path/to/profit_loss_data.csv'
+            csv_file_path = 'profit_loss_data/profit_loss_data.csv'
             df.to_csv(csv_file_path, index=False)
             print(f"Data saved to {csv_file_path}")
             
