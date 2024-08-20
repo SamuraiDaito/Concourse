@@ -1,15 +1,15 @@
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+import os
 
 # Load credentials from environment variables
-import os
 email = os.getenv("EMAIL")
 password = os.getenv("PASSWORD")
 
 # URL for Reliance company's Profit & Loss page
 login_url = "https://www.screener.in/login/"
-reliance_url = "https://www.screener.in/company/RELIANCE/"
+reliance_url = "https://www.screener.in/company/RELIANCE/consolidated/"
 
 # Use requests to log in to Screener.in
 session = requests.Session()
@@ -64,9 +64,9 @@ if login_response.url == "https://www.screener.in/dash/":
 
             # Create a DataFrame
             df = pd.DataFrame(data, columns=headers)
-            # Save DataFrame to CSV
-            df.to_csv('profit_loss_data.csv', index=False)
-            print("Data saved to profit_loss_data.csv")
+            
+            # Print the DataFrame
+            print(df)
         else:
             print("Table not found in Profit & Loss section!")
     else:
