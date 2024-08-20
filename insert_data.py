@@ -59,8 +59,7 @@ if login_response.url == "https://www.screener.in/dash/":
         
         if table:
             # Extract table headers
-            headers = ['Parameters'] + [header.get_text(strip=True) for header in table.find_all('th')]
-            headers = [header for header in headers if header]  # Remove empty headers
+            headers = [header.get_text(strip=True) for header in table.find_all('th')]
             print(f"Headers: {headers}")
 
             # Extract table rows
@@ -70,7 +69,7 @@ if login_response.url == "https://www.screener.in/dash/":
                 columns = row.find_all('td')
                 column_data = [column.get_text(strip=True) for column in columns]
                 if column_data:
-                    data.append([''] + column_data)  # Add an empty value for 'Parameters'
+                    data.append(column_data)
             
             # Check number of columns in data and headers
             if data:
