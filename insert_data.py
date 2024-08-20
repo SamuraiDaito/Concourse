@@ -1,8 +1,9 @@
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-import psycopg2
 import os
+import psycopg2
+from psycopg2 import sql
 
 # Load credentials from environment variables
 email = os.getenv("EMAIL")
@@ -17,7 +18,7 @@ db_port = "5432"
 
 # URL for Reliance company's Profit & Loss page
 login_url = "https://www.screener.in/login/"
-reliance_url = "https://www.screener.in/company/RELIANCE/"
+reliance_url = "https://www.screener.in/company/RELIANCE/consolidated/"
 
 # Use requests to log in to Screener.in
 session = requests.Session()
@@ -72,55 +73,55 @@ if login_response.url == "https://www.screener.in/dash/":
 
             # Create a DataFrame
             df = pd.DataFrame(data, columns=headers)
-
-            # Connect to PostgreSQL
-            conn = psycopg2.connect(
-                dbname=db_name,
-                user=db_user,
-                password=db_password,
-                host=db_host,
-                port=db_port
-            )
-            cursor = conn.cursor()
-
-            # Create table if not exists
-            create_table_query = """
-            CREATE TABLE IF NOT EXISTS profit_loss (
-                "Year" VARCHAR(255),
-                "Sales" VARCHAR(255),
-                "Expenses" VARCHAR(255),
-                "Operating Profit" VARCHAR(255),
-                "OPM %" VARCHAR(255),
-                "Other Income" VARCHAR(255),
-                "Interest" VARCHAR(255),
-                "Depreciation" VARCHAR(255),
-                "Profit before tax" VARCHAR(255),
-                "Tax %" VARCHAR(255),
-                "Net Profit" VARCHAR(255),
-                "EPS in Rs" VARCHAR(255),
-                "Dividend Payout %" VARCHAR(255)
-            );
-            """
-            cursor.execute(create_table_query)
-            conn.commit()
-
-            # Insert data into PostgreSQL
-            for i, row in df.iterrows():
-                insert_query = """
-                INSERT INTO profit_loss ("Year", "Sales", "Expenses", "Operating Profit", "OPM %", "Other Income", 
-                                         "Interest", "Depreciation", "Profit before tax", "Tax %", "Net Profit", 
-                                         "EPS in Rs", "Dividend Payout %")
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
-                """
-                cursor.execute(insert_query, tuple(row))
-            conn.commit()
-
-            print("Data inserted into PostgreSQL database successfully.")
-
-            # Close the cursor and connection
-            cursor.close()
-            conn.close()
-
+            
+            # Connect to PostgreSQL database
+            try:
+                conn = psycopg2.connect(
+                    dbname=db_name,
+                    user=db_user,
+                    password=db_password,
+                    host=db_host,
+                    port=db_port
+                )
+                cursor = conn.cursor()
+                
+                # Create table if it doesn't exist
+                cursor.execute("""
+                CREATE TABLE IF NOT EXISTS profit_loss (
+                    "Year" TEXT PRIMARY KEY,
+                    "Sales" TEXT,
+                    "Expenses" TEXT,
+                    "Operating Profit" TEXT,
+                    "OPM" TEXT,
+                    "Other Income" TEXT,
+                    "Interest" TEXT,
+                    "Depreciation" TEXT,
+                    "Profit before tax" TEXT,
+                    "Tax" TEXT,
+                    "Net Profit" TEXT,
+                    "EPS" TEXT
+                )
+                """)
+                
+                # Insert data into the table
+                for index, row in df.iterrows():
+                    cursor.execute(sql.SQL("""
+                        INSERT INTO profit_loss ({})
+                        VALUES ({})
+                        ON CONFLICT ("Year") DO NOTHING
+                    """).format(
+                        sql.SQL(', ').join(map(sql.Identifier, df.columns)),
+                        sql.SQL(', ').join(sql.Placeholder() * len(row))
+                    ), row.tolist())
+                
+                # Commit changes and close the connection
+                conn.commit()
+                cursor.close()
+                conn.close()
+                
+                print("Data inserted successfully into PostgreSQL!")
+            except Exception as e:
+                print(f"Database connection failed: {e}")
         else:
             print("Table not found in Profit & Loss section!")
     else:
