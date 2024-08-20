@@ -77,8 +77,6 @@ jobs:
                 pip install beautifulsoup4 requests pandas
                 . secrets-output/secrets.sh
                 python getappdata/scrape_reliance.py
-                # Ensure the output CSV is placed in the data-output directory
-                mv profit_loss_data.csv data-output/
 
       - task: insert-data
         config:
@@ -98,4 +96,4 @@ jobs:
               - |
                 pip install beautifulsoup4 requests pandas psycopg2
                 . secrets-output/secrets.sh
-                python getappdata/scrape_reliance.py
+                python getappdata/insert_data.py
