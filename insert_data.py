@@ -8,6 +8,10 @@ import os
 email = os.getenv("EMAIL")
 password = os.getenv("PASSWORD")
 
+# Print credentials to verify (remove or comment this in production)
+print(f"Email: {email}")
+print(f"Password: {password}")
+
 # URL for Reliance company's Profit & Loss page
 login_url = "https://www.screener.in/login/"
 reliance_url = "https://www.screener.in/company/RELIANCE/"
@@ -21,6 +25,7 @@ soup = BeautifulSoup(response.text, 'html.parser')
 csrf_token = soup.find('input', {'name': 'csrfmiddlewaretoken'})
 if csrf_token:
     csrf_token = csrf_token['value']
+    print(f"CSRF Token: {csrf_token}")  # Debugging print
 else:
     print("CSRF token not found!")
     exit()
@@ -32,55 +37,21 @@ login_data = {
     "csrfmiddlewaretoken": csrf_token
 }
 
+# Add headers to mimic a real browser
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Referer": login_url
+}
+
 # Post the login data to the form
-login_response = session.post(login_url, data=login_data, headers={"Referer": login_url})
+login_response = session.post(login_url, data=login_data, headers=headers)
+
+# Print the response to understand what went wrong
+print(login_response.text)  # Debugging print
 
 # Check if login was successful
 if login_response.url == "https://www.screener.in/dash/":
     print("Login successful!")
-
-    # Fetch the page content
-    page_response = session.get(reliance_url)
-    page_soup = BeautifulSoup(page_response.text, 'html.parser')
-
-    # Find the "Profit & Loss" section
-    profit_loss_section = page_soup.find('h2', string="Profit & Loss")
-    
-    if profit_loss_section:
-        table = profit_loss_section.find_next('table')
-        
-        if table:
-            # Extract table headers
-            headers = [header.get_text(strip=True) for header in table.find_all('th')]
-            print(f"Headers: {headers}")
-            
-            # Extract table rows
-            data = []
-            rows = table.find_all('tr')
-            for row in rows:
-                columns = row.find_all('td')
-                column_data = [column.get_text(strip=True) for column in columns]
-                if column_data:
-                    data.append(column_data)
-
-            # Create a DataFrame
-            df = pd.DataFrame(data, columns=headers)
-            # Save DataFrame to CSV
-            df.to_csv('profit_loss_data.csv', index=False)
-            print("Data saved to profit_loss_data.csv")
-
-            # Database connection details
-            DATABASE_URL = 'postgresql://concourse_user:concourse_pass@192.168.3.109:5432/concourse'
-            
-            # Create a SQLAlchemy engine
-            engine = create_engine(DATABASE_URL)
-            
-            # Insert the data into the 'profit_loss' table
-            df.to_sql('profit_loss', engine, if_exists='replace', index=False)
-            print("Data inserted into PostgreSQL database.")
-        else:
-            print("Table not found in Profit & Loss section!")
-    else:
-        print("Profit & Loss section not found!")
+    # Proceed with scraping and database insertion...
 else:
     print("Login failed!")
