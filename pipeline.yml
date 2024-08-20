@@ -96,5 +96,6 @@ jobs:
             args:
               - -c
               - |
-                pip install beautifulsoup4 requests pandas psycopg2 
-                python getappdata/insert_data.py
+                pip install beautifulsoup4 requests pandas psycopg2
+                . secrets-output/secrets.sh
+                python getappdata/scrape_reliance.py
