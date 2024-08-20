@@ -102,7 +102,6 @@ if login_response.url == "https://www.screener.in/dash/":
                     # Create table if it doesn't exist
                     create_table_query = """
                     CREATE TABLE IF NOT EXISTS profit_loss (
-                        "Parameters" TEXT,
                         "Mar 2013" TEXT,
                         "Mar 2014" TEXT,
                         "Mar 2015" TEXT,
